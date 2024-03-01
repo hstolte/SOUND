@@ -1,0 +1,49 @@
+# Experiment template file
+# All instances of {repo_dir} will be replaced by the absolute path of the repository
+
+executor_script: './scripts/flink_do_run.sh'
+
+query: 'SmartGridAnomalyOverhead'
+
+dimensions:
+  CI:
+    - 900
+    - 950
+    - 990
+  schema: variant.CI
+  bufferDelay:
+    - 0
+#    - 3600
+
+variants:
+  #  - name: NS
+  #    spe_command: >
+  #      {flink_cmd}
+  #      io.stolther.soundcheck.usecases.smartgrid.nosound.SmartGridAnomaly {query_jar}
+  #      --inputFolder {repo_dir} --statisticsFolder {statistics_folder} {args} {experiment_args} {extra_args}
+  #      --parallelism {parallelism} --nSamples 0
+  #    args: ''
+  - name: SMARTGRID
+    spe_command: >
+      {flink_cmd}
+      io.stolther.soundcheck.usecases.smartgrid.soundnoopsink.SmartGridAnomaly {query_jar}
+      --inputFolder {repo_dir}/data/input/sg-debs --statisticsFolder {statistics_folder} {args} --inputFile sg-debs-1G {extra_args}
+      --parallelism {parallelism} --nSamples {nSamples}
+    args: ''
+
+  - name: ASTRO
+    spe_command: >
+      {flink_cmd}
+      io.stolther.soundcheck.usecases.astro.QuerySoundNoOpSink {query_jar}
+      --inputFolder {repo_dir}/data/input/astro --statisticsFolder {statistics_folder} {args} --inputFile extended {extra_args}
+      --parallelism {parallelism} --nSamples {nSamples}
+    args: ''
+
+flink_cmd: "{repo_dir}/flink-1.14.0/bin/flink run --class"
+query_jar: "{repo_dir}/target/streaming-why-not-1.0-SNAPSHOT.jar"
+
+nSamples: 100
+
+parallelism: 4
+
+utilization_command: './scripts/utilization-flink.sh {statistics_folder}'

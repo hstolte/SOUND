@@ -1,0 +1,42 @@
+# Experiment template file
+# All instances of {repo_dir} will be replaced by the absolute path of the repository
+
+executor_script: './scripts/flink_do_run.sh'
+
+query: 'SmartGridAnomalyCaseWithUncertainty'
+
+CI: 990
+
+dimensions:
+  bufferDelay:
+    - 0
+  #    - 3600
+  nSamples:
+    - 10
+    - 200
+  schema: variant.nSamples
+
+variants:
+  - name: SOUND
+    spe_command: >
+      {flink_cmd}
+      io.stolther.soundcheck.usecases.smartgrid.sound.SmartGridAnomalyCaseWithUncertainty {query_jar}
+      --inputFolder {input_folder} --statisticsFolder {statistics_folder} {args} {experiment_args} {extra_args}
+      --parallelism {parallelism} --manual_value_uncertainty {manual_value_uncertainty} --CI {CI}
+    args: ''
+
+#  --manual_value_uncertainty {manual_value_uncertainty}
+
+flink_cmd: "{repo_dir}/flink-1.14.0/bin/flink run --class"
+query_jar: "{repo_dir}/target/streaming-why-not-1.0-SNAPSHOT.jar"
+input_folder: "{repo_dir}/data/input/sg-debs"
+
+experiment_args: "--inputFile sg-debs-1G"
+
+manual_value_uncertainty: 0.1
+
+parallelism: 2
+
+
+
+utilization_command: './scripts/utilization-flink.sh {statistics_folder}'

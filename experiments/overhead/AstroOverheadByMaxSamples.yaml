@@ -1,0 +1,44 @@
+# Experiment template file
+# All instances of {repo_dir} will be replaced by the absolute path of the repository
+
+executor_script: './scripts/flink_do_run.sh'
+
+query: 'AstroOverhead'
+
+CI: 950
+
+dimensions:
+  nSamples:
+    - 10
+    - 100
+    - 200
+  schema: variant.nSamples
+  bufferDelay:
+    - 0
+#    - 3600
+
+variants:
+  - name: NS
+    spe_command: >
+      {flink_cmd}
+      io.stolther.soundcheck.usecases.astro.Query {query_jar}
+      --inputFolder {repo_dir}/data/input/astro --statisticsFolder {statistics_folder} {args} {experiment_args} {extra_args}
+      --parallelism {parallelism} --CI {CI}
+    args: ''
+
+  - name: SOUNDNOOP
+    spe_command: >
+      {flink_cmd}
+      io.stolther.soundcheck.usecases.astro.QuerySoundNoOpSink {query_jar}
+      --inputFolder {repo_dir}/data/input/astro --statisticsFolder {statistics_folder} {args} --inputFile extended {extra_args}
+      --parallelism {parallelism} --CI {CI}
+    args: ''
+
+flink_cmd: "{repo_dir}/flink-1.14.0/bin/flink run --class"
+query_jar: "{repo_dir}/target/streaming-why-not-1.0-SNAPSHOT.jar"
+
+experiment_args: "--inputFile extended"
+
+parallelism: 4
+
+utilization_command: './scripts/utilization-flink.sh {statistics_folder}'
